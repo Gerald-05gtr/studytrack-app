@@ -4,14 +4,18 @@ package com.studytrack.app
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
+
 import androidx.compose.material3.*
+
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,20 +23,34 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.google.firebase.auth.FirebaseAuth
+
+import androidx.lifecycle.viewmodel.compose.viewModel
+
 import com.studytrack.app.ui.theme.StudyTrackTheme
+
 import org.json.JSONArray
 import org.json.JSONObject
 
+// ============================================
+// STUDYTRACK - STUDENT TASK MANAGER
+// ============================================
+
+// Task data model
 data class StudentTask(
     val title: String,
     val completed: Boolean = false,
     val deadline: String = ""
 )
 
+// ============================================
+// MAIN ACTIVITY
+// ============================================
+
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
 
         setContent {
@@ -43,63 +61,64 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// ============================================
+// AUTHENTICATION SCREENS
+// ============================================
+
 @Composable
-fun StudyTrackApp() {
-    val auth = remember { FirebaseAuth.getInstance() }
-    var loggedIn by remember {
-        mutableStateOf(auth.currentUser != null)
-    }
-    var registerMode by remember { mutableStateOf(false) }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var error by remember { mutableStateOf("") }
-    var loading by remember { mutableStateOf(false) }
+fun StudyTrackApp(
+    authViewModel: AuthViewModel = viewModel()
+) {
+    Scaffold(
+        modifier = Modifier.fillMaxSize()
+    ) { innerPadding ->
 
-    DisposableEffect(auth) {
-        val listener = FirebaseAuth.AuthStateListener {
-            loggedIn = it.currentUser != null
-        }
-        auth.addAuthStateListener(listener)
-        onDispose { auth.removeAuthStateListener(listener) }
-    }
+        if (authViewModel.loggedIn) {
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { padding ->
-        if (loggedIn) {
             StudyTrackHome(
-                modifier = Modifier.padding(padding),
-                email = auth.currentUser?.email.orEmpty(),
+                modifier = Modifier.padding(innerPadding),
+                email = authViewModel.currentEmail,
                 onLogout = {
-                    auth.signOut()
-                    loggedIn = false
-                    password = ""
-                    confirmPassword = ""
-                    error = ""
+                    authViewModel.logout()
                 }
             )
+
         } else {
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding)
+                    .padding(innerPadding)
                     .padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement =
+                    Arrangement.spacedBy(12.dp)
             ) {
+
                 Text(
-                    "StudyTrack",
+                    text = "StudyTrack",
                     style = MaterialTheme.typography.headlineLarge
                 )
+
                 Text("Manage student tasks and deadlines")
 
                 Text(
-                    if (registerMode) "Create Account" else "Log In",
+                    text = if (authViewModel.registerMode) {
+                        "Create Account"
+                    } else {
+                        "Log In"
+                    },
                     style = MaterialTheme.typography.titleLarge
                 )
 
+                // Email input
                 OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email") },
+                    value = authViewModel.email,
+                    onValueChange = {
+                        authViewModel.email = it
+                    },
+                    label = {
+                        Text("Email")
+                    },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email
                     ),
@@ -107,10 +126,15 @@ fun StudyTrackApp() {
                     modifier = Modifier.fillMaxWidth()
                 )
 
+                // Password input
                 OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { Text("Password") },
+                    value = authViewModel.password,
+                    onValueChange = {
+                        authViewModel.password = it
+                    },
+                    label = {
+                        Text("Password")
+                    },
                     visualTransformation =
                         PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(
@@ -120,11 +144,17 @@ fun StudyTrackApp() {
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                if (registerMode) {
+                // Registration confirmation
+                if (authViewModel.registerMode) {
+
                     OutlinedTextField(
-                        value = confirmPassword,
-                        onValueChange = { confirmPassword = it },
-                        label = { Text("Confirm Password") },
+                        value = authViewModel.confirmPassword,
+                        onValueChange = {
+                            authViewModel.confirmPassword = it
+                        },
+                        label = {
+                            Text("Confirm Password")
+                        },
                         visualTransformation =
                             PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(
@@ -135,91 +165,48 @@ fun StudyTrackApp() {
                     )
                 }
 
-                if (error.isNotBlank()) {
+                // Authentication error
+                if (authViewModel.error.isNotBlank()) {
+
                     Text(
-                        text = error,
+                        text = authViewModel.error,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
 
-                if (loading) {
+                // Loading indicator
+                if (authViewModel.loading) {
                     CircularProgressIndicator()
                 }
 
+                // Login / Register button
                 Button(
-                    enabled = !loading,
+                    enabled = !authViewModel.loading,
                     onClick = {
-                        val cleanEmail = email.trim()
-
-                        error = when {
-                            !cleanEmail.matches(
-                                Regex(
-                                    "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
-                                )
-                            ) -> "Enter a valid email address"
-
-                            password.length < 6 ->
-                                "Password must have at least 6 characters"
-
-                            registerMode &&
-                                    password != confirmPassword ->
-                                "Passwords do not match"
-
-                            else -> ""
-                        }
-
-                        if (error.isEmpty()) {
-                            loading = true
-
-                            val result = if (registerMode) {
-                                auth.createUserWithEmailAndPassword(
-                                    cleanEmail,
-                                    password
-                                )
-                            } else {
-                                auth.signInWithEmailAndPassword(
-                                    cleanEmail,
-                                    password
-                                )
-                            }
-
-                            result.addOnCompleteListener { task ->
-                                loading = false
-
-                                if (task.isSuccessful) {
-                                    loggedIn = true
-                                    error = ""
-                                } else {
-                                    error = if (registerMode) {
-                                        "Registration failed. Check your email " +
-                                                "or try another account."
-                                    } else {
-                                        "Login failed. Check your email " +
-                                                "and password."
-                                    }
-                                }
-                            }
-                        }
+                        authViewModel.submit()
                     }
                 ) {
                     Text(
-                        if (registerMode) "Create Account" else "Log In"
+                        if (authViewModel.registerMode) {
+                            "Create Account"
+                        } else {
+                            "Log In"
+                        }
                     )
                 }
 
+                // Switch between login and registration
                 TextButton(
                     onClick = {
-                        registerMode = !registerMode
-                        error = ""
-                        password = ""
-                        confirmPassword = ""
+                        authViewModel.switchMode()
                     }
                 ) {
                     Text(
-                        if (registerMode)
+                        if (authViewModel.registerMode) {
                             "Already have an account? Log In"
-                        else
+                        } else {
                             "No account? Register"
+                        }
                     )
                 }
             }
@@ -227,115 +214,182 @@ fun StudyTrackApp() {
     }
 }
 
+// ============================================
+// STUDENT DASHBOARD
+// ============================================
+
 @Composable
 fun StudyTrackHome(
     modifier: Modifier = Modifier,
     email: String,
     onLogout: () -> Unit
 ) {
+
     val context = LocalContext.current
 
+    // Load tasks from local storage
     val tasks = remember {
         mutableStateListOf<StudentTask>().apply {
             addAll(loadTasks(context))
         }
     }
 
-    var taskName by remember { mutableStateOf("") }
-    var taskDeadline by remember { mutableStateOf("") }
-    var showDialog by remember { mutableStateOf(false) }
+    var taskName by remember {
+        mutableStateOf("")
+    }
 
+    var taskDeadline by remember {
+        mutableStateOf("")
+    }
+
+    var showDialog by remember {
+        mutableStateOf(false)
+    }
+
+    // Save task changes automatically
     LaunchedEffect(tasks.toList()) {
         saveTasks(context, tasks)
     }
 
-    val completedCount = tasks.count { it.completed }
+    val completedCount = tasks.count {
+        it.completed
+    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement =
+            Arrangement.spacedBy(10.dp)
     ) {
+
+        // App title
         Text(
-            "StudyTrack",
+            text = "StudyTrack",
             style = MaterialTheme.typography.headlineLarge
         )
 
         Text("Student task manager")
-        Text("Logged in as $email")
 
-        OutlinedButton(onClick = onLogout) {
+        Text(
+            text = "Logged in as $email",
+            style = MaterialTheme.typography.bodySmall
+        )
+
+        // Logout button
+        OutlinedButton(
+            onClick = onLogout
+        ) {
             Text("Log Out")
         }
 
+        // Task section
         Text(
-            "Your Tasks",
+            text = "Your Tasks",
             style = MaterialTheme.typography.titleLarge
         )
 
-        Text("$completedCount of ${tasks.size} tasks completed")
+        Text(
+            "$completedCount of ${tasks.size} tasks completed"
+        )
 
-        Button(onClick = { showDialog = true }) {
+        Button(
+            onClick = {
+                showDialog = true
+            }
+        ) {
             Text("Add Task")
         }
 
+        // Task list
         if (tasks.isEmpty()) {
+
             Text("No tasks available yet.")
+
         } else {
+
             LazyColumn(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement =
+                    Arrangement.spacedBy(8.dp)
             ) {
+
                 itemsIndexed(tasks) { index, task ->
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.Top
                     ) {
+
+                        // Completion checkbox
                         Checkbox(
                             checked = task.completed,
                             onCheckedChange = { checked ->
+
                                 tasks[index] = task.copy(
                                     completed = checked
                                 )
                             }
                         )
 
-                        Column(modifier = Modifier.weight(1f)) {
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+
+                            // Task title
                             Text(
-                                task.title,
-                                style = MaterialTheme.typography.bodyLarge
+                                text = task.title,
+                                style =
+                                    MaterialTheme.typography.bodyLarge
                             )
 
+                            // Deadline
                             if (task.deadline.isNotBlank()) {
+
                                 Text(
-                                    "Deadline: ${task.deadline}",
-                                    style = MaterialTheme.typography.bodySmall
+                                    text = "Deadline: ${task.deadline}",
+                                    style =
+                                        MaterialTheme.typography.bodySmall,
+                                    color =
+                                        MaterialTheme.colorScheme.secondary
                                 )
                             }
 
+                            // Android Intent - Share Task
                             TextButton(
                                 onClick = {
+
                                     val shareText = buildString {
-                                        append("StudyTrack Assignment\n")
-                                        append("Task: ${task.title}\n")
+
+                                        append(
+                                            "StudyTrack Assignment\n"
+                                        )
+
+                                        append(
+                                            "Task: ${task.title}\n"
+                                        )
+
                                         if (task.deadline.isNotBlank()) {
                                             append(
                                                 "Deadline: ${task.deadline}\n"
                                             )
                                         }
+
                                         append(
                                             "Status: " +
-                                                    if (task.completed)
+                                                    if (task.completed) {
                                                         "Completed"
-                                                    else
+                                                    } else {
                                                         "Pending"
+                                                    }
                                         )
                                     }
 
-                                    val intent =
+                                    val shareIntent =
                                         Intent(Intent.ACTION_SEND).apply {
+
                                             type = "text/plain"
+
                                             putExtra(
                                                 Intent.EXTRA_TEXT,
                                                 shareText
@@ -344,7 +398,7 @@ fun StudyTrackHome(
 
                                     context.startActivity(
                                         Intent.createChooser(
-                                            intent,
+                                            shareIntent,
                                             "Share assignment using"
                                         )
                                     )
@@ -359,41 +413,69 @@ fun StudyTrackHome(
         }
     }
 
+    // ========================================
+    // ADD TASK DIALOG
+    // ========================================
+
     if (showDialog) {
+
         AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("Add New Task") },
+            onDismissRequest = {
+                showDialog = false
+            },
+
+            title = {
+                Text("Add New Task")
+            },
+
             text = {
+
                 Column(
                     verticalArrangement =
                         Arrangement.spacedBy(12.dp)
                 ) {
+
                     OutlinedTextField(
                         value = taskName,
-                        onValueChange = { taskName = it },
-                        label = { Text("Task Name") },
+                        onValueChange = {
+                            taskName = it
+                        },
+                        label = {
+                            Text("Task Name")
+                        },
                         singleLine = true
                     )
 
                     OutlinedTextField(
                         value = taskDeadline,
-                        onValueChange = { taskDeadline = it },
-                        label = { Text("Deadline (YYYY-MM-DD)") },
-                        placeholder = { Text("2026-10-23") },
+                        onValueChange = {
+                            taskDeadline = it
+                        },
+                        label = {
+                            Text("Deadline (YYYY-MM-DD)")
+                        },
+                        placeholder = {
+                            Text("2026-10-23")
+                        },
                         singleLine = true
                     )
                 }
             },
+
             confirmButton = {
+
                 TextButton(
                     onClick = {
+
                         if (taskName.isNotBlank()) {
+
                             tasks.add(
                                 StudentTask(
                                     title = taskName.trim(),
                                     deadline = taskDeadline.trim()
                                 )
                             )
+
                             taskName = ""
                             taskDeadline = ""
                             showDialog = false
@@ -403,8 +485,14 @@ fun StudyTrackHome(
                     Text("Save")
                 }
             },
+
             dismissButton = {
-                TextButton(onClick = { showDialog = false }) {
+
+                TextButton(
+                    onClick = {
+                        showDialog = false
+                    }
+                ) {
                     Text("Cancel")
                 }
             }
@@ -412,14 +500,26 @@ fun StudyTrackHome(
     }
 }
 
-fun saveTasks(context: Context, tasks: List<StudentTask>) {
+// ============================================
+// LOCAL TASK STORAGE
+// ============================================
+
+// Save tasks to SharedPreferences
+fun saveTasks(
+    context: Context,
+    tasks: List<StudentTask>
+) {
+
     val jsonArray = JSONArray()
 
     tasks.forEach { task ->
+
         val jsonObject = JSONObject()
+
         jsonObject.put("title", task.title)
         jsonObject.put("completed", task.completed)
         jsonObject.put("deadline", task.deadline)
+
         jsonArray.put(jsonObject)
     }
 
@@ -427,20 +527,30 @@ fun saveTasks(context: Context, tasks: List<StudentTask>) {
         "StudyTrackPrefs",
         Context.MODE_PRIVATE
     ).edit()
-        .putString("tasks", jsonArray.toString())
+        .putString(
+            "tasks",
+            jsonArray.toString()
+        )
         .apply()
 }
 
+// Load saved tasks
 fun loadTasks(context: Context): List<StudentTask> {
+
     val savedData = context.getSharedPreferences(
         "StudyTrackPrefs",
         Context.MODE_PRIVATE
-    ).getString("tasks", "[]") ?: "[]"
+    ).getString(
+        "tasks",
+        "[]"
+    ) ?: "[]"
 
     return try {
+
         val jsonArray = JSONArray(savedData)
 
         List(jsonArray.length()) { index ->
+
             val task = jsonArray.getJSONObject(index)
 
             StudentTask(
@@ -449,6 +559,7 @@ fun loadTasks(context: Context): List<StudentTask> {
                 deadline = task.optString("deadline", "")
             )
         }
+
     } catch (e: Exception) {
         emptyList()
     }
