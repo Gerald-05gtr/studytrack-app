@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 
 import androidx.lifecycle.viewmodel.compose.viewModel
 
+import com.studytrack.app.lab2.StudyTrackLab2Home
 import com.studytrack.app.ui.theme.StudyTrackTheme
 
 import org.json.JSONArray
@@ -75,13 +76,12 @@ fun StudyTrackApp(
 
         if (authViewModel.loggedIn) {
 
-            StudyTrackHome(
-                modifier = Modifier.padding(innerPadding),
-                email = authViewModel.currentEmail,
-                onLogout = {
-                    authViewModel.logout()
-                }
-            )
+            // Lab 2: cloud-backed tasks. Lab 1 login/register remains unchanged.
+            Box(modifier = Modifier.padding(innerPadding)) {
+                StudyTrackLab2Home(
+                    onLogout = { authViewModel.logout() }
+                )
+            }
 
         } else {
 

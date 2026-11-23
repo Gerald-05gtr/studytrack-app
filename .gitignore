@@ -38,3 +38,6 @@ key.properties
 # Operating system files
 .DS_Store
 Thumbs.db
+
+# Local Lab 2 backups
+/Lab2_Backup_*/

@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function own(d) { return signedIn() && d.ownerId == request.auth.uid; }
+    function valid(d) {
+      return d.keys().hasAll(['ownerId','title','description','categoryId','categoryName','deadline','priority','completed','createdAt','updatedAt'])
+        && d.keys().hasOnly(['ownerId','title','description','categoryId','categoryName','deadline','priority','completed','createdAt','updatedAt'])
+        && d.ownerId is string && d.ownerId.size() > 0
+        && d.title is string && d.title.size() >= 3 && d.title.size() <= 100
+        && d.description is string && d.description.size() <= 200
+        && d.categoryId is string && d.categoryId.size() > 0
+        && d.categoryName is string && d.categoryName.size() > 0
+        && d.deadline is timestamp
+        && d.priority is int && d.priority >= 1 && d.priority <= 3
+        && d.completed is bool
+        && d.createdAt is timestamp && d.updatedAt is timestamp
+        && (d.priority != 3 || d.description.size() >= 10)
+        && exists(/databases/$(database)/documents/categories/$(d.categoryId))
+        && get(/databases/$(database)/documents/categories/$(d.categoryId)).data.name == d.categoryName;
+    }
+    match /tasks/{taskId} {
+      allow read, delete: if own(resource.data);
+      allow create: if signedIn() && own(request.resource.data)
+        && valid(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.completed == false;
+      allow update: if own(resource.data) && own(request.resource.data)
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time
+        && valid(request.resource.data);
+    }
+    match /categories/{categoryId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
