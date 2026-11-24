@@ -1,0 +1,32 @@
+evidence_file,original_uploaded_filename,what_the_screenshot_shows,requirement,sha256_of_original
+01-firestore-database-created.png,image(20261119-090116).png,"Firestore initialized, before reference collections",R2,8fff1a621bd9705b1aef023aedd93d45e83556a588703ba5de612afbdc947574
+02-firestore-rules-published.png,image(20261119-090705).png,Firestore rules page showing a newly published rules version,R8,c839d997ba856706555ef0866c46a3de6602f8a741d64770ca720930e8ed413d
+03-category-assignment.png,image(20261119-091422).png,"Assignment reference document saved with name, description, sortOrder",R2,e84466e161c009edc3b28867e0a7a8e864f821f802214f95f503ae1f3ea80b10
+04-category-exam.png,image(20261119-092410).png,Exam category document showing corrected fields,R2,1f5628061b1a9766c6df6f5bbe72859e3a518f3d84e7499184698daa311a0300
+05-category-group-project.png,image(20261119-092651).png,Group Project category document showing corrected fields,R2,fdbeb62b0b8b13ef3eca03f9b94708ff7d66a1f797b65f34fbd7cc57f9848a4f
+06-gradle-build-success.png,image(20261123-221509).png,Gradle build successful after connecting Lab 2 files,R4,621ec650c8c813b6ad3a2b01ec2bb8f1299dbf7f4f2da4fd137c0aa77c221c4f
+07-cloud-task-list-empty-initial.png,image(20261123-221948).png,Initial empty cloud task list in Android emulator,R5 / E3,a3100b88c4e50a10501aafa8c26d463d0c4ba0c9a990e1fb26472ff57cae572d
+08-cloud-task-created-app.png,image(20261123-222309).png,New cloud task visible in Android emulator,R5 / R6,84e31a220103116e189a859d980d8edb610bc8c45bfb3b368f66d4028770f5fa
+09-cloud-task-created-firestore.png,image(20261123-222443).png,"Matching Firestore task document, fields and timestamps",R2 / R3 / R6,bf31e53f5c204d6d030c963ab34bacb0e12b2d6b84007b1aaf1e20c33c399333
+10-task-edited-app.png,image(20261123-222931).png,Edited task title and description in Android emulator,R6,caff65b633c5244d973a32947addc200e37eccf484ed197618b53ba29f084f48
+11-task-edited-firestore.png,image(20261123-223030).png,"Firestore document after edit, showing updatedAt and preserved createdAt",R6,19e2c80d6d8f9a2585728607d70d1a8d0f0c63929495974ead46369197d79fe0
+12-two-tasks-visible-before-delete.png,Screenshot 2026-11-23 233341.png,Two tasks visible before deletion,R5 / R7,e46864a989057a7f240a4d3662db47c3e7242661585725cb35791c8d64df6998
+13-delete-test-task-firestore-before.png,Screenshot 2026-11-23 233419.png,Temporary deletion-test document present in Firestore,R7,234bec902cff65d5c892c675314937fec0eb6f240f0efc843c8c0e47751a8c27
+14-delete-confirmation-dialog.png,Screenshot 2026-11-23 233500.png,Android delete confirmation dialog displaying task title,R7,1b8849156bdd9c11b423853b1e5c63af6df65b95a028b83239596c1ff30dd34b
+15-deleted-firestore-document-absent.png,Screenshot 2026-11-23 233538.png,Firestore document view reports that deleted document does not exist,R7,730b139bdda95cb6d97db2260867f5b05effc9677504efbaafc61feb74a37283
+16-search-by-title.png,Screenshot 2026-11-23 234051.png,Search query Firestore returns matching task,E1,08cbdd4a7ac73ce9d5a302068b37aec61ac1d63a0c76daaf04559337f193d484
+17-search-by-description.png,Screenshot 2026-11-23 234128.png,Search query synchronization returns matching task,E1,e1ecac224fb70a83a8f6ffe5631ff8f758f38bbad67a47d253361ed10b8f61c4
+18-search-no-results.png,Screenshot 2026-11-23 234154.png,Search query submission displays no matching tasks,E1 / E3,b5d04e300a2484a910efaac6d2200cc6877e91dc719898e0a25b7624da29bcdb
+19-completion-statistics.png,Screenshot 2026-11-23 234233.png,Completion statistics show 0 pending and 1 completed,E7,4323632f151f8782d7ffeaa5d0e78107886057cdebac5f25e974e8543ade5e8b
+20-cloud-task-list-empty.png,Screenshot 2026-11-23 234442.png,Empty cloud task list; screenshot alone does not establish second-user identity,E3,30d7e40ceeb481edd1c07c8c87c55e7a59b43b6c2e15fbb5dbd52a649945a055
+21-r8-security-tests-eight-pass.png,image(20261123-231137).png,"Local Firestore emulator output: R8 summary 8/8 PASS, 0 FAIL",R8,b6d1e96526bc689e19db8c7c4b6fb18d3cba5ab6a6949009c0de8611589d1e5b
+22-git-lab2-commit.png,image(20261123-232830).png,Git commit of Lab 2 code and testing files,R1 / R10,c77e50e043b797438b4e359560f640cb937938103642899dc3c6d222122722a9
+23-git-lab2-branch-pushed.png,image(20261123-233015).png,Lab 2 branch pushed to GitHub,R1 / R10,c77ce213ed2073ce4c4d0e8dd7d7e7343b3559fc8b3171a77b132ff7c5a64420
+24-github-pr7-open.png,image(20261123-233359).png,GitHub Pull Request #7 open,R10,bd97c673536b1f48dd615439a80b925d2ce78c12daf12ff4c440635a6050a688
+25-github-pr7-conflict-resolved.png,image(20261123-234405).png,GitHub PR #7 reports no conflicts with base branch,R10,1939b7f3db33b9d9fe287376c5ac8706a8a11be8aa7f551d972270d0b5640923
+26-github-issue8-cloud-crud.png,image(20261123-234941).png,Sprint 2 Issue #8: Cloud CRUD,R1,fd55bee5f7c41e1717095a0a7d18dba1c854c8b07413f9b6053463a179a99c9e
+27-github-issue9-security.png,image(20261123-235211).png,Sprint 2 Issue #9: Security rules and testing,R1,691172da7611cd6981525bc81e9ef968c5bd42b30bd6f19511ad06a05f378dae
+28-github-issue10-extensions.png,image(20261123-235343).png,Sprint 2 Issue #10: Three extensions,R1,22dae4815db6bcc878bb88b850f1d52d87ab54ed00e0a9e082ea804d334e4b4c
+29-github-issue11-documentation.png,image(20261123-235859).png,Sprint 2 Issue #11: Documentation and final submission,R1 / R10,4ce130827ae240a1099b3b0247a39e2bf03c21f2cafc8dbccc9ee91ff764dd4f
+30-github-sprint2-issues-list.png,image(20261124-000430).png,GitHub open Sprint 2 issues list showing #8–#11,R1,f08e8317952b3759a8cf91a0dd7fa5f3409f3f52a23ac5d972f053fa05b7e601
+31-github-retrospective-issue12.png,image(20261124-001225).png,Retrospective Issue #12 with Sprint Board association,R10,fc39bf03e2cc3713133d8207a54324775aa6302a328dab0b6e690715a33eeabc

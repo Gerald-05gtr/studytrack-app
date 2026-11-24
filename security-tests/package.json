@@ -1,0 +1,10 @@
+{
+  "name": "studytrack-r8-security-tests",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": { "test": "node tests/r8.test.cjs" },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.0.0"
+  }
+}
